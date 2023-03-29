@@ -1,84 +1,54 @@
-// write your code here
-
-const ramenMenu = document.getElementById('ramen-menu');
-console.log(ramenMenu);
-const ramenDetails = document.getElementById("ramen-detail");
-console.log(ramenDetails);
-const detailImage = document.querySelector(".detail-image")
-console.log(detailImage);
-const names = document.querySelector(".name")
-console.log(names);
-const restaurant = document.querySelector("#new-restaurant")
-console.log(restaurant);
+const menu = document.getElementById("ramen-menu");
+const detail = document.getElementById("ramen-detail");
 const form = document.getElementById("new-ramen");
-console.log(form);
-const textArea = document.getElementById("new-comment")
-console.log(textArea);
-const comment = document.getElementById('comment-display')
-console.log(comment);
-const rating = document.getElementById('rating-display')
-console.log(rating);
-const createBtn = document.querySelector('input[type="submit"]')
-console.log(createBtn)
-
-createBtn.addEventListener("click", function(e){
-    e.preventDefault();
-    console.log("create Button Clicked");
-    let name = names.value;
-    let restaurant = restaurant.value;
-    let image = detailImage.value;
-    let rating = rating.value;
-    let comment =comment.value;
-
-    if (name === "" || resturant === "" || image === "" || rating === "" || comment === "" ){
-        alert("Hey name and age are required");
-        return;
-      }
-
-})
-
-let data = {
-    name: names.value,
-    restaurant: restaurant.value,
-    image: detailImage.value,
-    rating :rating.value,
-    comment: comment.value
-}
-
-data = JSON.stringify(data);
-console.log(data);
-
-fetch(" http://localhost:3000/ramens", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then(function (response) {
-    return response.json();
-  })
-  .then(data => {
-    let template =""
-    data.forEach(data => {
-        template += `
-        <div class = "data"> 
-            <img src ="${data.image.slice(2, data.image.length)}"/>
-            <h2>${data.name}</h2>
-            <p>${data.restaurant}</p>
-            <p>${data.rating}</p>
-            <p>${data.comment}</p>
-        </div>
-        
-        `
-        //data.innerHTML = template
-        document.getElementById('dynamic_data').innerHTML = template
-        console.log(template);
-    })
-
-    })
-  //.then(result => console.log(result))
-  .catch(function (error) {
-    console.log("There was an error");
-    console.log("Error", error);
+fetch("http://localhost:3000/ramens")
+  .then((response) => response.json())
+  .then((ramens) => {
+    ramens.forEach((ramen) => {
+      const img = document.createElement("img");
+      img.src = ramen.image;
+      img.alt = ramen.name;
+      menu.appendChild(img);
+      img.addEventListener("click", () => {
+        fetch(`http://localhost:3000/ramens/${ramen.id}`)
+          .then((response) => response.json())
+          .then((details) => {
+            detail.innerHTML = `
+                <h4>${details.name}</h4>
+                <p>Restaurant: ${details.restaurant}</p>
+                <img src="${details.image}" alt="${details.name}">
+                <p>Rating: ${details.rating}</p>
+                <p>Comment: ${details.comment}</p> `;
+          })
+          .catch((error) => console.error(error));
+      });
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const nameInput = document.querySelector("#new-name");
+        const imageInput = document.querySelector("#new-image");
+        const restaurantInput = document.querySelector("#new-restaurant");
+        const ratingInput = document.querySelector("#new-rating");
+        const commentInput = document.querySelector("#new-comment");
+        const newRamenName = document.createElement("h2");
+        const newRamenImage = document.createElement("img");
+        const newRamenRestaurant = document.createElement("p");
+        const newRamenRating = document.createElement("p");
+        const newRamenComment = document.createElement("p");
+        newRamenName.textContent = nameInput.value;
+        newRamenImage.src = imageInput.value;
+        newRamenRestaurant.textContent = restaurantInput.value;
+        newRamenRating.textContent = `Rating: ${ratingInput.value}`;
+        newRamenComment.textContent = `Comment: ${commentInput.value}`;
+        menu.appendChild(newRamenImage);
+        form.reset();
+        newRamenImage.addEventListener("click", () => {
+          detail.innerHTML = `
+          <h4>${newRamenName.textContent}</h4>
+          <p>Restaurant: ${newRamenRestaurant.textContent}</p>
+          <img src="${newRamenImage.src}" alt="${newRamenName.textContent}">
+          <p>Rating: ${newRamenRating.textContent}</p>
+          <p>Comment: ${newRamenComment.textContent}</p> `;
+        });
+      });
+    });
   });
-
-
